@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>-nolove- // melonland</title>
+    <style>
+        /* Base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+
+        body {
+            background-color: #000000;
+            color: #9f9f9f;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>') 0 0, auto;
+        }
+
+        /* Header styles */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1rem;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 10;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            color: #a093c7;
+            text-decoration: none;
+            letter-spacing: 2px;
+            text-shadow: 0 0 5px #8a74d4;
+        }
+
+        .nav-link {
+            color: #8a74d4;
+            margin-left: 1rem;
+            text-decoration: none;
+            transition: all 0.3s;
+            text-shadow: 0 0 3px #8a74d4;
+        }
+
+        .nav-link:hover {
+            color: #ffffff;
+            text-shadow: 0 0 8px #8a74d4;
+        }
+
+        /* Canvas container */
+        #scene-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Overlay text */
+        .overlay-text {
+            position: fixed;
+            bottom: 1rem;
+            left: 1rem;
+            color: #8a74d4;
+            font-size: 0.8rem;
+            z-index: 10;
+            opacity: 0.7;
+            text-shadow: 0 0 5px #8a74d4;
+        }
+
+        /* Popup containers */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(16, 14, 23, 0.95);
+            border: 1px solid #8a74d4;
+            box-shadow: 0 0 25px #8a74d4;
+            padding: 1.5rem;
+            z-index: 100;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: flicker 3s infinite;
+        }
+        
+        /* Audio control */
+        .audio-control {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            z-index: 10;
+            color: #8a74d4;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .audio-control button {
+            background: none;
+            border: 1px solid #8a74d4;
+            color: #8a74d4;
+            cursor: pointer;
+            padding: 0.3rem 0.5rem;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .audio-control button:hover {
+            background-color: rgba(138, 116, 212, 0.2);
+        }
+
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #333;
+            padding-bottom: 0.5rem;
+        }
+
+        .popup-title {
+            color: #a093c7;
+            font-size: 1.2rem;
+            text-shadow: 0 0 5px #8a74d4;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #a093c7;
+            font-size: 1.2rem;
+            cursor: pointer;
+            text-shadow: 0 0 3px #8a74d4;
+        }
+
+        .close-btn:hover {
+            color: #ffffff;
+            text-shadow: 0 0 8px #8a74d4;
+        }
+
+        /* About popup */
+        .about-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .about-container {
+                flex-direction: row;
+            }
+        }
+
+        .profile-pic {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border: 1px solid #8a74d4;
+            filter: grayscale(80%) brightness(0.8) contrast(1.2);
+        }
+
+        .about-info {
+            flex: 1;
+        }
+
+        .about-info h3 {
+            color: #a093c7;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 3px #8a74d4;
+        }
+
+        .about-info p {
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .likes-list {
+            list-style-type: none;
+            margin-left: 1rem;
+        }
+
+        .likes-list li {
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+        .likes-list li:before {
+            content: ">";
+            position: absolute;
+            left: -1rem;
+            color: #8a74d4;
+        }
+
+        /* Links popup */
+        .links-list {
+            list-style-type: none;
+        }
+
+        .links-list li {
+            margin-bottom: 1rem;
+        }
+
+        .links-list a {
+            color: #a093c7;
+            text-decoration: none;
+            display: block;
+            padding: 0.5rem;
+            border: 1px solid #333;
+            transition: all 0.3s;
+        }
+
+        .links-list a:hover {
+            background-color: rgba(138, 116, 212, 0.2);
+            border-color: #8a74d4;
+            transform: translateX(5px);
+        }
+
+        /* Gallery popup */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .gallery-item {
+            overflow: hidden;
+            border: 1px solid #333;
+            aspect-ratio: 1;
+            position: relative;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(80%) brightness(0.8) contrast(1.2);
+            transition: all 0.3s;
+        }
+
+        .gallery-item:hover img {
+            filter: grayscale(0%) brightness(1) contrast(1);
+            transform: scale(1.05);
+        }
+
+        /* Animations */
+        @keyframes flicker {
+            0%, 100% { opacity: 0.95; }
+            50% { opacity: 0.85; }
+        }
+
+        .scan-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: rgba(138, 116, 212, 0.2);
+            z-index: 999;
+            pointer-events: none;
+            animation: scan 8s linear infinite;
+        }
+
+        @keyframes scan {
+            from { top: 0; }
+            to { top: 100vh; }
+        }
+
+        .static-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.5 0"/></filter><rect width="500" height="500" filter="url(%23noise)" opacity="0.1"/></svg>');
+            pointer-events: none;
+            z-index: 11;
+            opacity: 0.05;
+        }
+
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 1.5s;
+        }
+
+        .loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-text {
+            color: #8a74d4;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            letter-spacing: 2px;
+        }
+
+        .loading-bar {
+            width: 200px;
+            height: 5px;
+            background-color: #222;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loading-bar:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0;
+            background-color: #8a74d4;
+            animation: loading 3s ease-in-out forwards;
+        }
+
+        @keyframes loading {
+            0% { width: 0; }
+            100% { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading screen -->
+    <div class="loading">
+        <div class="loading-text">CONNECTING TO NETWORK...</div>
+        <div class="loading-bar"></div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <a href="#" class="logo">-nolove-</a>
+        <nav>
+            <a href="#" class="nav-link" id="about-link">[about]</a>
+            <a href="#" class="nav-link" id="links-link">[links]</a>
+            <a href="#" class="nav-link" id="gallery-link">[gallery]</a>
+        </nav>
+    </header>
+
+    <!-- 3D Scene Container -->
+    <div id="scene-container"></div>
+
+    <!-- Overlay text -->
+    <div class="overlay-text">
+        // click on monitors to discover more //
+    </div>
+
+    <!-- Scan line effect -->
+    <div class="scan-line"></div>
+
+    <!-- Static overlay -->
+    <div class="static-overlay"></div>
+    
+    <!-- Audio control -->
+    <div class="audio-control">
+        <button id="audio-toggle">[static: on]</button>
+    </div>
+    
+    <!-- Audio elements -->
+    <audio id="static-audio" loop>
+        <source src="data:audio/wav;base64,UklGRiSAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQCAAAD/////////////////////////////////////////////////////////////////mQAA/////////////////P///////////////wEAAAD/////////////Af///v/+//////////////////////8AAAD///////8AAAD///////////////8D/////P7////8//7//wEBAQD+///+AAAAAAD//////wAAAP////////////////8BAAEAAAAA/wAAAAD/AAAAAQD+///+////AAABAAEAAAD//wAAAAAA/////////wAAAAEA//8AAP7///7///8AAQEA//////////8BAAEA//8AAP////7///////8AAAAAAAABAAEAAQAAAP//AAD//wAAAAAAAAIAAgACAP//////////////AAAAAP7//v////8AAAAAAAABABAAAAAAAAAAAAD//////////////f////8A//8AAAAA//////////////////8AAAAAAQD///////8AAP//AAAAAAACAAIAAQAAAP//////////////AAAAAAEAAAAAAP//AAAAAAEAAQABAAAAAAAAAAAAAAD///////8AAAIAAQAAAP3//f/+//7//v8AAAAABQAEAAAA/v/8//8/8//z//P/8//7//v/+/wAAAQADAAAAAAAAAAAAAAAAAAAAAAACAP//AAAAAAAA//7//v/+//7//v/+//7/AAD+//7//v/+//7//v/+//7///8AAAAA" type="audio/wav">
+    </audio>
+
+    <!-- About Popup -->
+    <div id="about-popup" class="popup">
+        <div class="popup-header">
+            <h2 class="popup-title">about:://-nolove-</h2>
+            <button class="close-btn">×</button>
+        </div>
+        <div class="about-container">
+            <img src="https://via.placeholder.com/300" alt="profile" class="profile-pic">
+            <div class="about-info">
+                <h3>// who am i</h3>
+                <p>lost in the wired. neither here nor there. digital ghost wandering through remnants of forgotten networks. signal without source.</p>
+                
+                <h3>// likes</h3>
+                <ul class="likes-list">
+                    <li>abandoned technology</li>
+                    <li>static interference</li>
+                    <li>digital decay</li>
+                    <li>forgotten protocols</li>
+                    <li>liminal spaces</li>
+                    <li>ethereal frequencies</li>
+                    <li>technological entropy</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Links Popup -->
+    <div id="links-popup" class="popup">
+        <div class="popup-header">
+            <h2 class="popup-title">links:://-nolove-</h2>
+            <button class="close-btn">×</button>
+        </div>
+        <ul class="links-list">
+            <li><a href="#" target="_blank">// melonland gateway</a></li>
+            <li><a href="#" target="_blank">// neural echo chamber</a></li>
+            <li><a href="#" target="_blank">// frequency modulation archive</a></li>
+            <li><a href="#" target="_blank">// darknet transmissions</a></li>
+            <li><a href="#" target="_blank">// binary void collective</a></li>
+            <li><a href="#" target="_blank">// glitch art repository</a></li>
+            <li><a href="#" target="_blank">// abandoned server project</a></li>
+        </ul>
+    </div>
+
+    <!-- Gallery Popup -->
+    <div id="gallery-popup" class="popup">
+        <div class="popup-header">
+            <h2 class="popup-title">gallery:://-nolove-</h2>
+            <button class="close-btn">×</button>
+        </div>
+        <div class="gallery-grid">
+            <div class="gallery-item"><img src="https://via.placeholder.com/300" alt="gallery image"></div>
+            <div class="gallery-item"><img src="https://via.placeholder.com/300" alt="gallery image"></div>
+            <div class="gallery-item"><img src="https://via.placeholder.com/300" alt="gallery image"></div>
+            <div class="gallery-item"><img src="https://via.placeholder.com/300" alt="gallery image"></div>
+            <div class="gallery-item"><img src="https://via.placeholder.com/300" alt="gallery image"></div>
+            <div class="gallery-item"><img src="https://via.placeholder.com/300" alt="gallery image"></div>
+            <div class="gallery-item"><img src="https://via.placeholder.com/300" alt="gallery image"></div>
+            <div class="gallery-item"><img src="https://via.placeholder.com/300" alt="gallery image"></div>
+            <div class="gallery-item"><img src="https://via.placeholder.com/300" alt="gallery image"></div>
+        </div>
+    </div>
+
+    <!-- Three.js Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Wait for the page to load
+        window.addEventListener('load', () => {
+            // Hide loading screen after delay
+            setTimeout(() => {
+                document.querySelector('.loading').classList.add('hidden');
+            }, 3000);
+        });
+
+        // Three.js setup
+        let scene, camera, renderer;
+        let monitors = [];
+        let raycaster, mouse;
+        let clock = new THREE.Clock();
+
+        // Create eyes and wire elements during init
+        function init() {
+            // Create scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+            
+            // Create camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+            camera.position.y = 1;
+            
+            // Create renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            
+            // Add renderer to DOM
+            document.getElementById('scene-container').appendChild(renderer.domElement);
+            
+            // Setup lighting
+            setupLights();
+            
+            // Create CRT monitors
+            createMonitors();
+            
+            // Create environment
+            createEnvironment();
+            
+            // Create evil eyes
+            createEvilEyes();
+            
+            // Setup raycaster for monitor interaction
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+            
+            // Add event listeners
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('click', onClick);
+            
+            // Start animation loop
+            animate();
+        }
+        
+        // Setup scene lighting
+        function setupLights() {
+            // Ambient light (very dim)
+            const ambientLight = new THREE.AmbientLight(0x111111, 0.2);
+            scene.add(ambientLight);
+            
+            // Add subtle point lights to represent general environment lighting
+            const pointLight1 = new THREE.PointLight(0x333333, 0.5, 10);
+            pointLight1.position.set(5, 3, 5);
+            scene.add(pointLight1);
+            
+            const pointLight2 = new THREE.PointLight(0x222222, 0.3, 10);
+            pointLight2.position.set(-5, 3, -5);
+            scene.add(pointLight2);
+        }
+        
+        // Create CRT monitors
+        function createMonitors() {
+            // Main monitor textures for interaction
+            const monitorTextures = [
+                createCanvasTexture('ABOUT', '#8a74d4'),  // About
+                createCanvasTexture('LINKS', '#8a74d4'),  // Links
+                createCanvasTexture('GALLERY', '#8a74d4') // Gallery
+            ];
+            
+            // Create a group of stacked monitors
+            const monitorGroup = new THREE.Group();
+            
+            // Create main monitors (these will be interactive)
+            for (let i = 0; i < 3; i++) {
+                const monitor = createMonitor(monitorTextures[i]);
+                
+                // Position monitors
+                if (i === 0) { // About monitor
+                    monitor.position.set(-2, 0.8, 0);
+                    monitor.rotation.y = Math.PI * 0.15;
+                } else if (i === 1) { // Links monitor
+                    monitor.position.set(0, 0.4, 0.5);
+                    monitor.rotation.y = Math.PI * -0.05;
+                } else { // Gallery monitor
+                    monitor.position.set(2, 1.2, -0.3);
+                    monitor.rotation.y = Math.PI * -0.2;
+                }
+                
+                // Store monitor for interaction
+                monitors.push(monitor);
+                
+                // Add monitor to group
+                monitorGroup.position.y = -1;
+                monitorGroup.add(monitor);
+            }
+            
+            // Add additional non-interactive background monitors
+            for (let i = 0; i < 10; i++) {
+                const noiseTexture = createNoiseTexture();
+                const bgMonitor = createMonitor(noiseTexture);
+                
+                // Random position and rotation
+                const x = (Math.random() - 0.5) * 8;
+                const y = (Math.random() - 0.5) * 4;
+                const z = (Math.random() - 0.5) * 5 - 2; // Push back a bit
+                
+                bgMonitor.position.set(x, y, z);
+                bgMonitor.rotation.x = (Math.random() - 0.5) * 0.5;
+                bgMonitor.rotation.y = (Math.random() - 0.5) * 0.8;
+                bgMonitor.rotation.z = (Math.random() - 0.5) * 0.3;
+                
+                // Make background monitors smaller
+                bgMonitor.scale.set(0.6, 0.6, 0.6);
+                
+                monitorGroup.add(bgMonitor);
+            }
+            
+            scene.add(monitorGroup);
+        }
+        
+        // Create a single CRT monitor
+        function createMonitor(screenTexture) {
+            const monitor = new THREE.Group();
+            
+            // Monitor casing
+            const casingGeometry = new THREE.BoxGeometry(1.2, 1, 0.8);
+            const casingMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x111111,
+                shininess: 30
+            });
+            const casing = new THREE.Mesh(casingGeometry, casingMaterial);
+            monitor.add(casing);
+            
+            // Screen
+            const screenGeometry = new THREE.PlaneGeometry(1, 0.8);
+            const screenMaterial = new THREE.MeshPhongMaterial({ 
+                map: screenTexture,
+                emissive: 0xff2222,
+                emissiveMap: screenTexture,
+                emissiveIntensity: 1.5
+            });
+            const screen = new THREE.Mesh(screenGeometry, screenMaterial);
+            screen.position.set(0, 0, 0.41);
+            monitor.add(screen);
+            
+            // Add stronger glow to screens
+            const glowGeometry = new THREE.PlaneGeometry(1.2, 1);
+            const glowMaterial = new THREE.MeshBasicMaterial({
+                color: 0xff3333,
+                transparent: true,
+                opacity: 0.3,
+                blending: THREE.AdditiveBlending
+            });
+            const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+            glow.position.set(0, 0, 0.42);
+            monitor.add(glow);
+
+            // Add second glow layer for stronger effect
+            const outerGlowGeometry = new THREE.PlaneGeometry(1.4, 1.2);
+            const outerGlowMaterial = new THREE.MeshBasicMaterial({
+                color: 0xff3333,
+                transparent: true,
+                opacity: 0.15,
+                blending: THREE.AdditiveBlending
+            });
+            const outerGlow = new THREE.Mesh(outerGlowGeometry, outerGlowMaterial);
+            outerGlow.position.set(0, 0, 0.43);
+            monitor.add(outerGlow);
+            
+            return monitor;
+        }
+        
+        // Create canvas texture with glyphs for monitor screen
+        function createCanvasTexture(text, color) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            const context = canvas.getContext('2d');
+            
+            // Black background
+            context.fillStyle = '#000000';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Add heavy noise
+            addNoiseToCanvas(context, canvas.width, canvas.height, 0.15);
+            
+            // Add scan lines
+            addScanLines(context, canvas.width, canvas.height);
+            
+            // Create main glyphs instead of text
+            // Array of strange glyphs and symbols
+            const glyphs = ['⌘', '⍾', '⎈', '⎊', '⏏', '⏚', '⏣', '⌬', '⍰', '⌖', '⌗', '⌥', '⌤', '♅', '♇', 
+                           '☢', '☣', '⚠', '⚙', '⚛', '⛒', '⛚', '⛢', '✇', '⌔', '⟑', '⟒', '⟓', '⟰', '⟱', 
+                           '⟲', '⟳', '⟴', '⟵', '⟶', '⟷', '⟸', '⟹', '⟺', '⟻', '⟼', '⟿', '⠀', '⠁', '⠂'];
+            
+            // Select a random main glyph
+            const mainGlyph = glyphs[Math.floor(Math.random() * glyphs.length)];
+            
+            context.font = 'bold 48px monospace';
+            context.fillStyle = '#ff3333'; // Glowing red
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(mainGlyph, canvas.width / 2, canvas.height / 2);
+            
+            // Add "2133" number somewhere in the canvas
+            context.font = '20px monospace';
+            context.fillStyle = '#ff3333'; // Also red
+            const x2133 = Math.random() * (canvas.width - 60) + 30;
+            const y2133 = Math.random() * (canvas.height - 60) + 30;
+            context.fillText('2133', x2133, y2133);
+            
+            // Add some random red glyphs
+            addRandomRedGlyphs(context, canvas.width, canvas.height);
+            
+            // Add some glitch effect
+            addGlitchEffect(context, canvas.width, canvas.height);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            return texture;
+        }
+        
+        // Add random red glyphs to canvas
+        function addRandomRedGlyphs(context, width, height) {
+            // Array of strange glyphs and symbols
+            const glyphs = ['⌘', '⍾', '⎈', '⎊', '⏏', '⏚', '⏣', '⌬', '⍰', '⌖', '⌗', '⌥', '⌤', '♅', '♇', 
+                           '☢', '☣', '⚠', '⚙', '⚛', '⛒', '⛚', '⛢', '✇', '⌔', '⟑', '⟒', '⟓', '⟰', '⟱', 
+                           '⟲', '⟳', '⟴', '⟵', '⟶', '⟷', '⟸', '⟹', '⟺', '⟻', '⟼', '⟿', '⠀', '⠁', '⠂'];
+            
+            // Add 5-10 random glyphs
+            const glyphCount = Math.floor(Math.random() * 6) + 5;
+            
+            for (let i = 0; i < glyphCount; i++) {
+                const glyph = glyphs[Math.floor(Math.random() * glyphs.length)];
+                const glyphSize = Math.floor(Math.random() * 20) + 10;
+                
+                context.font = `${glyphSize}px monospace`;
+                // Red with varying opacity
+                context.fillStyle = `rgba(255, 51, 51, ${Math.random() * 0.8 + 0.2})`;
+                
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                
+                context.fillText(glyph, x, y);
+            }
+        }
+        
+        // Create noise texture for background monitors
+        function createNoiseTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            const context = canvas.getContext('2d');
+            
+            // Black background
+            context.fillStyle = '#000000';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Add strong noise
+            addNoiseToCanvas(context, canvas.width, canvas.height, 0.15);
+            
+            // Add scan lines
+            addScanLines(context, canvas.width, canvas.height);
+            
+            // Add random glyphs, including "2133"
+            context.font = '24px monospace';
+            context.fillStyle = `rgba(138, 116, 212, ${Math.random() * 0.5 + 0.5})`;
+            const x2133 = Math.random() * (canvas.width - 60) + 30;
+            const y2133 = Math.random() * (canvas.height - 60) + 30;
+            context.fillText('2133', x2133, y2133);
+            
+            addRandomGlyphs(context, canvas.width, canvas.height);
+            
+            // Add some glitch effect
+            addGlitchEffect(context, canvas.width, canvas.height);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            return texture;
+        }
+        
+        // Add noise to canvas
+        function addNoiseToCanvas(context, width, height, intensity) {
+            const imageData = context.getImageData(0, 0, width, height);
+            const data = imageData.data;
+            
+            for (let i = 0; i < data.length; i += 4) {
+                const noise = (Math.random() - 0.5) * intensity * 255;
+                data[i] += noise;     // R
+                data[i + 1] += noise; // G
+                data[i + 2] += noise; // B
+            }
+            
+            context.putImageData(imageData, 0, 0);
+        }
+        
+        // Add scan lines to canvas
+        function addScanLines(context, width, height) {
+            context.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            for (let i = 0; i < height; i += 2) {
+                context.fillRect(0, i, width, 1);
+            }
+        }
+        
+        // Add glitch effect to canvas
+        function addGlitchEffect(context, width, height) {
+            // Add a few random glitch rectangles
+            for (let i = 0; i < 3; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                const w = Math.random() * 100 + 20;
+                const h = Math.random() * 10 + 2;
+                
+                const r = Math.floor(Math.random() * 255);
+                const g = Math.floor(Math.random() * 255);
+                const b = Math.floor(Math.random() * 255);
+                const a = Math.random() * 0.1 + 0.1;
+                
+                context.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
+                context.fillRect(x, y, w, h);
+            }
+        }
+        
+        // Create environment (wires, etc.)
+        function createEnvironment() {
+            // Create random wires connecting monitors
+            createWires();
+            
+            // Create server racks
+            createServers();
+            
+            // Add a floor
+            const floorGeometry = new THREE.PlaneGeometry(20, 20);
+            const floorMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x111111, 
+                shininess: 10,
+                side: THREE.DoubleSide
+            });
+            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.y = -2;
+            scene.add(floor);
+            
+            // Add fog
+            scene.fog = new THREE.FogExp2(0x000000, 0.08);
+        }
+        
+        // Create server racks
+        function createServers() {
+            // Create a group for servers
+            const serverGroup = new THREE.Group();
+            
+            // Create 3-5 server racks
+            const serverCount = Math.floor(Math.random() * 3) + 3;
+            
+            for (let i = 0; i < serverCount; i++) {
+                // Create server rack
+                const server = createServerRack();
+                
+                // Position server
+                const x = (Math.random() - 0.5) * 12;
+                const z = (Math.random() - 0.5) * 12 - 3; // Push back a bit
+                
+                server.position.set(x, -1.5, z); // Place on floor
+                server.rotation.y = Math.random() * Math.PI * 2; // Random rotation
+                
+                serverGroup.add(server);
+            }
+            
+            scene.add(serverGroup);
+        }
+        
+        // Create a single server rack
+        function createServerRack() {
+            const server = new THREE.Group();
+            
+            // Server rack case
+            const rackHeight = 1.5 + Math.random() * 1; // 1.5-2.5 units tall
+            const rackWidth = 0.6 + Math.random() * 0.2; // 0.6-0.8 units wide
+            const rackDepth = 0.8 + Math.random() * 0.4; // 0.8-1.2 units deep
+            
+            const rackGeometry = new THREE.BoxGeometry(rackWidth, rackHeight, rackDepth);
+            const rackMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x222222,
+                shininess: 20
+            });
+            const rack = new THREE.Mesh(rackGeometry, rackMaterial);
+            server.add(rack);
+            
+            // Add server units
+            const unitCount = Math.floor(rackHeight * 4); // Approximately 4 units per height unit
+            const unitHeight = rackHeight / unitCount;
+            
+            for (let i = 0; i < unitCount; i++) {
+                // Skip some units randomly
+                if (Math.random() < 0.3) continue;
+                
+                // Create server unit
+                const unitGeometry = new THREE.BoxGeometry(rackWidth * 0.95, unitHeight * 0.8, rackDepth * 0.9);
+                
+                // Random dark color for server unit
+                const hue = Math.random() * 0.1;
+                const serverColor = new THREE.Color().setHSL(hue, 0.2, 0.2 + Math.random() * 0.1);
+                
+                const unitMaterial = new THREE.MeshPhongMaterial({ 
+                    color: serverColor,
+                    shininess: 30
+                });
+                
+                const unit = new THREE.Mesh(unitGeometry, unitMaterial);
+                
+                // Position unit in rack
+                const yPos = -rackHeight/2 + i * unitHeight + unitHeight/2;
+                unit.position.set(0, yPos, 0.02); // Slight offset to avoid z-fighting
+                
+                server.add(unit);
+                
+                // Add status LEDs
+                if (Math.random() < 0.7) {
+                    const ledCount = Math.floor(Math.random() * 5) + 1;
+                    
+                    for (let j = 0; j < ledCount; j++) {
+                        const ledSize = 0.02;
+                        const ledGeometry = new THREE.SphereGeometry(ledSize, 8, 8);
+                        
+                        // Random LED color (green, red, blue)
+                        const ledColors = [0x22ff22, 0xff2222, 0x2222ff];
+                        const ledColor = ledColors[Math.floor(Math.random() * ledColors.length)];
+                        
+                        const ledMaterial = new THREE.MeshBasicMaterial({ 
+                            color: ledColor,
+                            emissive: ledColor,
+                            emissiveIntensity: 0.8
+                        });
+                        
+                        const led = new THREE.Mesh(ledGeometry, ledMaterial);
+                        
+                        // Position LED on front of unit
+                        const ledX = (Math.random() - 0.5) * (rackWidth * 0.8);
+                        const ledY = 0;
+                        const ledZ = rackDepth/2 + 0.01;
+                        
+                        led.position.set(ledX, ledY, ledZ);
+                        unit.add(led);
+                    }
+                }
+            }
+            
+            return server;
+        }
+        
+        // Create wires connecting monitors
+        function createWires() {
+            // Helper function to create a single wire
+            function createWire(start, end, thickness, segments) {
+                const points = [];
+                const segmentCount = segments || 6;
+                
+                // Create points for the curve
+                for (let i = 0; i <= segmentCount; i++) {
+                    const t = i / segmentCount;
+                    
+                    // Linear interpolation between start and end
+                    const x = start.x * (1 - t) + end.x * t;
+                    const z = start.z * (1 - t) + end.z * t;
+                    
+                    // Add some random variation to y
+                    const midPointHeight = Math.random() * -1 - 0.5;
+                    let y;
+                    
+                    if (i === 0) {
+                        y = start.y;
+                    } else if (i === segmentCount) {
+                        y = end.y;
+                    } else {
+                        // Parabolic curve downward
+                        const parabolicT = (t - 0.5) * 2; // -1 to 1
+                        y = start.y * (1 - t) + end.y * t + midPointHeight * (1 - parabolicT * parabolicT);
+                    }
+                    
+                    points.push(new THREE.Vector3(x, y, z));
+                }
+                
+                // Create curve from points
+                const curve = new THREE.CatmullRomCurve3(points);
+                
+                // Create tube geometry along the curve
+                const wireGeometry = new THREE.TubeGeometry(curve, 32, thickness, 8, false);
+                
+                // Random dark color for wire
+                const hue = Math.random() * 0.1 + 0.1; // Dark but slightly varied hue
+                const wireColor = new THREE.Color().setHSL(hue, 0.5, 0.2);
+                
+                const wireMaterial = new THREE.MeshPhongMaterial({ 
+                    color: wireColor,
+                    shininess: 30
+                });
+                
+                const wire = new THREE.Mesh(wireGeometry, wireMaterial);
+                return wire;
+            }
+            
+            // Create several wires connecting different monitors
+            const wireGroup = new THREE.Group();
+            
+            // Extract positions from monitors
+            const monitorPositions = monitors.map(monitor => {
+                const worldPos = new THREE.Vector3();
+                monitor.getWorldPosition(worldPos);
+                return worldPos;
+            });
+            
+            // Connect each main monitor to several other points
+            for (let i = 0; i < monitorPositions.length; i++) {
+                const startPos = monitorPositions[i];
+                
+                // Create 6-10 wires from each monitor (increased from 3-5)
+                const wireCount = Math.floor(Math.random() * 5) + 6;
+                
+                for (let j = 0; j < wireCount; j++) {
+                    // Determine end position (either another monitor or random point)
+                    let endPos;
+                    
+                    if (Math.random() < 0.6 && monitorPositions.length > 1) {
+                        // Connect to another monitor
+                        let targetIndex;
+                        do {
+                            targetIndex = Math.floor(Math.random() * monitorPositions.length);
+                        } while (targetIndex === i); // Ensure not connecting to self
+                        
+                        endPos = monitorPositions[targetIndex].clone();
+                    } else {
+                        // Connect to random point on floor
+                        endPos = new THREE.Vector3(
+                            (Math.random() - 0.5) * 10,
+                            -2, // Floor level
+                            (Math.random() - 0.5) * 10
+                        );
+                    }
+                    
+                    // Slightly offset start position
+                    const offsetStart = startPos.clone().add(
+                        new THREE.Vector3(
+                            (Math.random() - 0.5) * 0.5,
+                            (Math.random() - 0.5) * 0.3,
+                            (Math.random() - 0.5) * 0.5
+                        )
+                    );
+                    
+                    // Create the wire
+                    const wireThickness = Math.random() * 0.02 + 0.01;
+                    const segments = Math.floor(Math.random() * 4) + 5;
+                    const wire = createWire(offsetStart, endPos, wireThickness, segments);
+                    
+                    wireGroup.add(wire);
+                }
+            }
+            
+            // Create additional random wires in the environment
+            const additionalWireCount = 25; // Added more wires
+            
+            for (let i = 0; i < additionalWireCount; i++) {
+                const startX = (Math.random() - 0.5) * 10;
+                const startY = Math.random() * 3 - 1;
+                const startZ = (Math.random() - 0.5) * 10;
+                
+                const endX = (Math.random() - 0.5) * 10;
+                const endY = Math.random() * 3 - 2;
+                const endZ = (Math.random() - 0.5) * 10;
+                
+                const startPos = new THREE.Vector3(startX, startY, startZ);
+                const endPos = new THREE.Vector3(endX, endY, endZ);
+                
+                const wireThickness = Math.random() * 0.015 + 0.005;
+                const segments = Math.floor(Math.random() * 5) + 3;
+                const wire = createWire(startPos, endPos, wireThickness, segments);
+                
+                wireGroup.add(wire);
+            }
+            
+            scene.add(wireGroup);
+        }
+        
+        // Handle window resize
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        // Handle mouse movement
+        function onMouseMove(event) {
+            // Calculate mouse position in normalized device coordinates
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        }
+        
+        // Handle mouse click
+        function onClick(event) {
+            // Update the picking ray with the camera and mouse position
+            raycaster.setFromCamera(mouse, camera);
+            
+            // Calculate objects intersecting the picking ray
+            const intersects = raycaster.intersectObjects(scene.children, true);
+            
+            // Check for monitor intersection
+            for (let i = 0; i < intersects.length; i++) {
+                // Find the parent monitor group
+                let parent = intersects[i].object;
+                while (parent && parent.parent && parent.parent !== scene) {
+                    parent = parent.parent;
+                }
+                
+                // Check if it's one of our interactive monitors
+                const monitorIndex = monitors.indexOf(parent);
+                if (monitorIndex !== -1) {
+                    // Open the corresponding popup
+                    openPopup(monitorIndex);
+                    break;
+                }
+            }
+        }
+        
+        // Open the corresponding popup
+        function openPopup(index) {
+            const popups = [
+                document.getElementById('about-popup'),
+                document.getElementById('links-popup'),
+                document.getElementById('gallery-popup')
+            ];
+            
+            // Hide all popups first
+            popups.forEach(popup => {
+                popup.style.display = 'none';
+            });
+            
+            // Show the selected popup
+            popups[index].style.display = 'block';
+            
+            // Add glitch effect to the screen
+            addScreenGlitch(index);
+        }
+        
+        // Add glitch effect to the monitor screen
+        function addScreenGlitch(monitorIndex) {
+            // Flash effect
+            const monitor = monitors[monitorIndex];
+            const screen = monitor.children[1]; // Second child is the screen
+            
+            // Store original material
+            const originalMaterial = screen.material.clone();
+            
+            // Set to bright white
+            screen.material.color.set(0xffffff);
+            screen.material.emissiveIntensity = 2;
+            
+            // Reset after a short delay
+            setTimeout(() => {
+                screen.material = originalMaterial;
+            }, 100);
+        }
+        
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const delta = clock.getDelta();
+            const elapsed = clock.getElapsedTime();
+            
+            // Slightly rotate camera to create a floating effect
+            camera.position.y = 1 + Math.sin(elapsed * 0.5) * 0.1;
+            camera.position.x = Math.sin(elapsed * 0.3) * 0.2;
+            
+            // Look at the center
+            camera.lookAt(0, 0, 0);
+            
+            // Animate screens (more pronounced pulsing and static)
+            monitors.forEach((monitor, index) => {
+                const screen = monitor.children[1]; // Second child is the screen
+                const glow = monitor.children[2]; // Third child is the glow
+                const outerGlow = monitor.children[3]; // Fourth child is the outer glow
+                
+                // Pulse the screen brightness
+                const intensity = 0.7 + Math.sin(elapsed * 1.5 + index) * 0.3;
+                screen.material.emissiveIntensity = intensity * 2;
+                
+                // More erratic pulsing for static effect
+                if (Math.random() < 0.1) { // 10% chance per frame
+                    screen.material.emissiveIntensity = Math.random() * 3 + 0.5;
+                }
+                
+                // Pulse the glow opacity
+                glow.material.opacity = 0.3 + Math.sin(elapsed * 2 + index * 0.7) * 0.15;
+                
+                // Pulse the outer glow
+                if (outerGlow) {
+                    outerGlow.material.opacity = 0.15 + Math.sin(elapsed * 1.3 + index * 0.5) * 0.1;
+                }
+                
+                // Randomly update screen textures with new glyphs more frequently
+                if (Math.random() < 0.02) { // 2% chance per frame - increased from 0.5%
+                    updateScreenTexture(screen, index);
+                }
+            });
+            
+            // Update evil eyes in top left corner
+            updateEvilEyes(elapsed);
+            
+            // Update server LEDs
+            updateServerLEDs(elapsed);
+            
+            renderer.render(scene, camera);
+        }
+        
+        // Add evil eyes to the scene
+        function createEvilEyes() {
+            const eyesGroup = new THREE.Group();
+            
+            // Position in top left corner of scene
+            eyesGroup.position.set(-3, 2, -3);
+            
+            // Create left eye
+            const leftEye = createEye();
+            leftEye.position.set(-0.2, 0, 0);
+            eyesGroup.add(leftEye);
+            
+            // Create right eye
+            const rightEye = createEye();
+            rightEye.position.set(0.2, 0, 0);
+            eyesGroup.add(rightEye);
+            
+            scene.add(eyesGroup);
+            
+            return eyesGroup;
+        }
+        
+        // Create a single eye
+        function createEye() {
+            const eye = new THREE.Group();
+            
+            // Eye white (actually dark for evil effect)
+            const eyeGeometry = new THREE.SphereGeometry(0.15, 16, 16);
+            const eyeMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x110000,
+                emissive: 0x220000,
+                emissiveIntensity: 0.5,
+                shininess: 50
+            });
+            const eyeWhite = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            eye.add(eyeWhite);
+            
+            // Pupil (glowing red)
+            const pupilGeometry = new THREE.SphereGeometry(0.07, 16, 16);
+            const pupilMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xff0000,
+                emissive: 0xff0000,
+                emissiveIntensity: 1.0
+            });
+            const pupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
+            pupil.position.z = 0.08;
+            eye.add(pupil);
+            
+            // Eye lid (for blinking)
+            const lidGeometry = new THREE.SphereGeometry(0.16, 16, 16, 0, Math.PI * 2, 0, Math.PI * 0.5);
+            const lidMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x000000,
+                side: THREE.DoubleSide
+            });
+            const lid = new THREE.Mesh(lidGeometry, lidMaterial);
+            lid.rotation.x = Math.PI;
+            lid.position.z = 0.02;
+            eye.add(lid);
+            
+            return eye;
+        }
+        
+        // Update evil eyes (blinking, looking around)
+        function updateEvilEyes(elapsed) {
+            // Find eyes in scene
+            scene.traverse(function(object) {
+                if (object.type === 'Group' && object.children.length === 3) {
+                    // This might be an eye
+                    const eyeWhite = object.children[0];
+                    const pupil = object.children[1];
+                    const lid = object.children[2];
+                    
+                    if (eyeWhite.geometry.type === 'SphereGeometry' && 
+                        pupil.geometry.type === 'SphereGeometry' && 
+                        lid.geometry.type === 'SphereGeometry') {
+                        
+                        // Randomly decide if eye should blink
+                        if (Math.random() < 0.005) { // 0.5% chance per frame
+                            // Blink animation sequence
+                            setTimeout(() => {
+                                lid.rotation.x = Math.PI / 2; // Close
+                            }, 0);
+                            
+                            setTimeout(() => {
+                                lid.rotation.x = Math.PI; // Open
+                            }, 200);
+                        }
+                        
+                        // Move pupil to simulate looking around
+                        const lookX = Math.sin(elapsed * 0.5) * 0.05;
+                        const lookY = Math.cos(elapsed * 0.7) * 0.05;
+                        
+                        pupil.position.x = lookX;
+                        pupil.position.y = lookY;
+                        pupil.position.z = 0.08;
+                        
+                        // Occasionally make eye glow more intensely
+                        if (Math.random() < 0.01) { // 1% chance per frame
+                            pupil.material.emissiveIntensity = 1.5 + Math.random() * 0.5;
+                            
+                            setTimeout(() => {
+                                pupil.material.emissiveIntensity = 1.0;
+                            }, 200);
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Initialize when document is loaded
+        document.addEventListener('DOMContentLoaded', init);
+
+        // Popup handling
+        document.querySelectorAll('.close-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.closest('.popup').style.display = 'none';
+            });
+        });
+
+        // Nav link handling
+        document.getElementById('about-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            openPopup(0);
+        });
+
+        document.getElementById('links-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            openPopup(1);
+        });
+
+        document.getElementById('gallery-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            openPopup(2);
+        });
+        
+        // Audio controls
+        const audioElement = document.getElementById('static-audio');
+        const audioToggle = document.getElementById('audio-toggle');
+        
+        // Start playing audio once the user interacts with the page
+        document.addEventListener('click', function startAudio() {
+            audioElement.volume = 0.2; // Set volume to 20%
+            audioElement.play().catch(e => console.log('Audio play failed:', e));
+            document.removeEventListener('click', startAudio);
+        }, { once: true });
+        
+        // Toggle audio on/off
+        audioToggle.addEventListener('click', () => {
+            if (audioElement.paused) {
+                audioElement.play();
+                audioToggle.textContent = '[static: on]';
+            } else {
+                audioElement.pause();
+                audioToggle.textContent = '[static: off]';
+            }
+        });
+        
+        // Helper function to add random glyphs to canvas
+        function addRandomGlyphs(context, width, height) {
+            const glyphs = ['⌘', '⍾', '⎈', '⎊', '⏏', '⏚', '⏣', '⌬', '⍰', '⌖', '⌗', '⌥', '⌤', '♅', '♇', 
+                           '☢', '☣', '⚠', '⚙', '⚛', '⛒', '⛚', '⛢', '✇', '⌔', '⟑', '⟒', '⟓', '⟰', '⟱', 
+                           '⟲', '⟳', '⟴', '⟵', '⟶', '⟷', '⟸', '⟹', '⟺', '⟻', '⟼', '⟿', '⠀', '⠁', '⠂'];
+            
+            const count = Math.floor(Math.random() * 10) + 5;
+            
+            for (let i = 0; i < count; i++) {
+                const glyph = glyphs[Math.floor(Math.random() * glyphs.length)];
+                const size = Math.floor(Math.random() * 20) + 10;
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                
+                context.font = `${size}px monospace`;
+                context.fillStyle = `rgba(138, 116, 212, ${Math.random() * 0.5 + 0.3})`;
+                context.fillText(glyph, x, y);
+            }
+        }
+        
+        // Helper function to update screen texture
+        function updateScreenTexture(screen, index) {
+            if (index >= 0 && index < 3) {
+                // For main monitors, recreate the specific texture
+                const texts = ['ABOUT', 'LINKS', 'GALLERY'];
+                const newTexture = createCanvasTexture(texts[index], '#8a74d4');
+                screen.material.map = newTexture;
+                screen.material.emissiveMap = newTexture;
+                screen.material.needsUpdate = true;
+            } else {
+                // For background monitors, create new noise texture
+                const newTexture = createNoiseTexture();
+                screen.material.map = newTexture;
+                screen.material.emissiveMap = newTexture;
+                screen.material.needsUpdate = true;
+            }
+        }
+        
+        // Helper function to update server LEDs
+        function updateServerLEDs(elapsed) {
+            scene.traverse(function(object) {
+                if (object.type === 'Mesh' && object.geometry.type === 'SphereGeometry' && 
+                    object.material.emissiveIntensity !== undefined) {
+                    // This is likely an LED
+                    if (Math.random() < 0.05) { // 5% chance to change state
+                        object.material.emissiveIntensity = Math.random() > 0.3 ? 0.8 : 0;
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
